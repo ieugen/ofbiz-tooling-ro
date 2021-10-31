@@ -1,0 +1,17 @@
+= Licență date/ license for data
+
+== data.gov.ro
+
+Are using OGL-ROU-1.0 license
+
+* https://data.gov.ro/dataset?q=siruta&sort=score+desc%2C+metadata_modified+desc
+* https://data.gov.ro/dataset/unitati-administrativ-teritoriale-coduri-siruta
+* https://data.gov.ro/dataset/siruta
+* https://data.gov.ro/dataset/siruta-registrul-unitatilor-administrativ-teritoriale-ale-romaniei
+* https://data.gov.ro/dataset/coduri-postale-romania
+
+
+== data/dbfbl.mdrap.ro
+
+Unknown license (public institution): http://www.dpfbl.mdrap.ro/cod_siruta_uat-uri.html
+
