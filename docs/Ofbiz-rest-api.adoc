@@ -1,0 +1,24 @@
+= Experiments to use ofbiz admin commands
+
+
+.Get OFBiz auth token
+--
+
+export OFBIZ_AUTH_TOKEN=$(curl -X POST "https://localhost:8443/rest/auth/token" -H "accept: application/json" -H "Authorization: Basic YWRtaW46b2ZiaXo=" --insecure | jq '.data.access_token' --raw-output)
+
+curl -X GET \
+    -H "accept: application/json" \
+    -H "Authorization: Bearer $OFBIZ_AUTH_TOKEN" \
+    --insecure  \
+    https://localhost:8443/rest/services
+
+
+--
+
+
+.Sample scratch data to be imported
+[source,xml]
+--
+
+<entity-engine-xml>  <Party partyId="IoanEugen" statusId="PARTY_ENABLED" partyTypeId="PERSON" /></entity-engine-xml>
+--

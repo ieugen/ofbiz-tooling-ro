@@ -1,4 +1,11 @@
-{:paths ["src" "scripts"]
- :deps {org.clojure/clojure {:mvn/version "1.10.2"}
-        org.clojure/data.csv {:mvn/version "1.0.0"}
-        org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}}}
+{:aliases  {:dev {:extra-paths ["development/src"]
+                  :extra-deps {org.clojure/clojure {:mvn/version "1.10.3"}
+                               org.clojure/tools.deps.alpha {:mvn/version "0.12.1003"}}}
+
+            :test {:extra-paths []}
+
+            :poly {:main-opts ["-m" "polylith.clj.core.poly-cli.core"]
+                   :extra-deps {polyfy/polylith
+                                {:git/url   "https://github.com/polyfy/polylith"
+                                 :sha       "403dccc9d07a89338ab2fec31b8a7207ec02545f"
+                                 :deps/root "projects/poly"}}}}}
