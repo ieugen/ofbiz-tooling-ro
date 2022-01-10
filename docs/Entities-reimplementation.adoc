@@ -1,0 +1,33 @@
+= Entity engine reimplementation in Clojure
+
+I think refactoring OFBiz and splitting the codebase into modules is a very hard work.
+
+This is a fresh start.
+
+The goal is to start from entity definistions and implement persistance.
+Once we have that we should probably be able to use OFBiz data.
+
+The plan is not to have 100% compatible implementation.
+
+
+NOTE: Try (best effort) to maintain the same paths for files as in OFBiz project so the code can be ported if necessary.
+
+
+.Copy entity definitions from ofbiz project
+[source,shell]
+--
+    # Copy xsd files
+    mkdir -p data/ofbiz-xsd
+    yes | cp ../ofbiz-framework/**/*.xsd --parents --target data/ofbiz-xsd
+    mv data/ofbiz-framework/* data/ofbiz-xsd
+
+    mkdir -p data/ofbiz-fieldtypes
+    yes | cp ../ofbiz-framework/**/fieldtype/* --parents --target data/ofbiz-fieldtypes
+    mv data/ofbiz-framework/* data/ofbiz-fieldtypes
+
+    # Copy ofbiz entity definisions
+    mkdir -p data/ofbiz-entitydef
+    yes | cp ../ofbiz-framework/**/entitydef/*.xml --parents data/ofbiz-entitydef
+    mv data/ofbiz-framework/* data/ofbiz-entitydef
+
+--

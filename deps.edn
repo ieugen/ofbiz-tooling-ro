@@ -1,6 +1,18 @@
-{:aliases  {:dev {:extra-paths ["development/src"]
+{:aliases  {:dev {:extra-paths ["development/src" "development/resources"]
                   :extra-deps {org.clojure/clojure {:mvn/version "1.10.3"}
-                               org.clojure/tools.deps.alpha {:mvn/version "0.12.1003"}}}
+                               org.clojure/tools.deps.alpha {:mvn/version "0.12.1003"}
+                               clj-xml-validation/clj-xml-validation {:mvn/version "1.0.2"}
+                               djblue/portal {:mvn/version "0.16.1"}
+                               meander/epsilon {:mvn/version "0.0.650"}
+                               riveted/riveted {:mvn/version "0.1.1"}
+                               ;; jdbc - calcite
+                               com.github.seancorfield/next.jdbc {:mvn/version "1.2.761"}
+                               com.rpl/proxy-plus {:mvn/version "0.0.8"}
+                               io.github.ieugen/calcite-clj {:mvn/version "0.1.2"}
+                               org.apache.calcite/calcite-core {:mvn/version "1.29.0"}
+                               org.apache.calcite/calcite-file {:mvn/version "1.29.0"}
+                               org.apache.calcite/calcite-linq4j {:mvn/version "1.29.0"}
+                               org.apache.calcite.avatica/avatica-core {:mvn/version "1.20.0"}}}
 
             :test {:extra-paths []}
 
