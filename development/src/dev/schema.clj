@@ -23,6 +23,15 @@
 
 (set! *warn-on-reflection* true)
 
+(def default-ofbiz-entitydefs
+  ["data/ofbiz-entitydef/framework/common/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/entity/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/entityext/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/catalina/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/security/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/service/entitydef/entitymodel.xml"
+   "data/ofbiz-entitydef/framework/webapp/entitydef/entitymodel.xml"])
+
 ;; (defn entity-fields->calcite-row
 ;;   [fields field-type-defs]
 ;;   ())
@@ -40,14 +49,13 @@
 (defn row-type
   "Build a calcite row type (reltype)from a clojure structure"
   ^RelDataType [^JavaTypeFactory type-factory rowdef]
-  ;; (println "row-type" rowdef)
   (.createStructType type-factory ^List (map (partial row->rel-type type-factory) rowdef)))
 
 (defn entity->Table
   "Table based on a clojure data structure.
    It implements the {@link ScannableTable} interface, so Calcite gets
    data by calling the {@link #scan(DataContext)} method."
-  ^Table [{:keys [data rowdef name] :as table-def}]
+  ^Table [{:keys [data rowdef name] :as table-def} field-type-defs]
   (let [row-type-memo (memoize row-type)]
     (proxy+
      []
@@ -82,15 +90,17 @@
               (close [this] nil))))))))))
 
 (defn create-tables
-  ^Map [entities]
-  (map entity->Table entities))
+  ^Map [entities field-type-defs]
+  (let [e->table (fn e->table [e]
+                   (clojure.lang.MapEntry/create (:entity-name e) (entity->Table e field-type-defs)))]
+    (into {} (map e->table entities))))
 
 (defn ofbiz-schema
   "Create a Calcite Schema and return it for use."
   ^Schema [^SchemaPlus parent-schema ^String name ^Map operand]
   (let [ftd (ep/load-field-type-defs (slurp "data/ofbiz-fieldtypes/framework/entity/fieldtype/fieldtypepostgres.xml"))
-        entities (ep/load-entities (slurp "data/ofbiz-entitydef/framework/entity/entitydef/entitymodel.xml"))
-        tables (create-tables entities)]
+        entities (ep/load-many-entities default-ofbiz-entitydefs)
+        tables (create-tables entities ftd)]
     (proxy+
      []
      AbstractSchema
@@ -107,6 +117,8 @@
         ds (jdbc/get-datasource db)]
     (jdbc/execute! ds ["select * from emps where age is null or age >= 40"]))
 
+  (tap> (ep/load-many-entities default-ofbiz-entitydefs))
+
   ;; display table metadata
   (let [db {:jdbcUrl "jdbc:calcite:model=resources/model.json"
             :user "admin"
@@ -116,4 +128,5 @@
       (let [metadata (.getMetaData connection)
             rs (.getTables metadata nil nil nil (into-array ["TABLE" "VIEW"]))]
         (rs/datafiable-result-set rs ds))))
+
   )

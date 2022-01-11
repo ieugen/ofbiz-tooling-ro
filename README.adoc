@@ -3,3 +3,10 @@
 TODO:
 
 * Implement entity engine on top of XML file https://cwiki.apache.org/confluence/display/OFBIZ/Handling+of+External+data
+
+
+
+== References
+
+* Extract JDBC metadata https://www.baeldung.com/jdbc-database-metadata
+* OFBiz data format https://cwiki.apache.org/confluence/display/OFBIZ/Handling+of+External+data

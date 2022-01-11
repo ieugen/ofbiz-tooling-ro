@@ -76,11 +76,14 @@
         entities (vtd/search nav "/entitymodel/entity")]
     (map entity->map entities)))
 
+(defn load-many-entities
+  "Load multiple entity files from a list of paths"
+  [entity-paths]
+  (mapcat #(load-entities (slurp %)) entity-paths))
 
 (comment
 
   (tap> (xml/parse "data/ofbiz-entitydef/framework/entity/entitydef/entitymodel.xml"))
-
 
   (load-field-type-defs (slurp "data/ofbiz-fieldtypes/framework/entity/fieldtype/fieldtypepostgres.xml"))
 
