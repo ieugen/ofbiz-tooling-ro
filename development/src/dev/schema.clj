@@ -1,8 +1,9 @@
 (ns dev.schema
   (:require [com.rpl.proxy-plus :refer [proxy+]]
+            [dev.entity-parse :as ep]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
-            [dev.entity-parse :as ep])
+            [riveted.core :as vtd])
   (:import (java.util List
                       Map
                       Map$Entry)
@@ -32,10 +33,6 @@
    "data/ofbiz-entitydef/framework/service/entitydef/entitymodel.xml"
    "data/ofbiz-entitydef/framework/webapp/entitydef/entitymodel.xml"])
 
-;; (defn entity-fields->calcite-row
-;;   [fields field-type-defs]
-;;   ())
-
 (defn to-nullable-rel-data-type
   "Helper to create rel-data-type"
   ^RelDataType [^JavaTypeFactory type-factory ^SqlTypeName sql-type-name]
@@ -51,11 +48,15 @@
   ^RelDataType [^JavaTypeFactory type-factory rowdef]
   (.createStructType type-factory ^List (map (partial row->rel-type type-factory) rowdef)))
 
+
+; Implement ofbiz-entity-xml parsing
+
+
 (defn entity->Table
   "Table based on a clojure data structure.
    It implements the {@link ScannableTable} interface, so Calcite gets
    data by calling the {@link #scan(DataContext)} method."
-  ^Table [{:keys [data rowdef name] :as table-def} field-type-defs]
+  ^Table [{:keys [entity-name rowdef data] :as table-def} field-type-defs xml-nav]
   (let [row-type-memo (memoize row-type)]
     (proxy+
      []
@@ -74,6 +75,8 @@
          AbstractEnumerable
          (enumerator
           [this]
+          ;; return VTD's and convert row and column on demand 
+          ;; avoid doing conversion if we don't use the row because it is filtered out ?!
           (let [i (atom -1)
                 len (- (count data) 1)]
             (reify org.apache.calcite.linq4j.Enumerator
@@ -90,17 +93,21 @@
               (close [this] nil))))))))))
 
 (defn create-tables
-  ^Map [entities field-type-defs]
-  (let [e->table (fn e->table [e]
-                   (clojure.lang.MapEntry/create (:entity-name e) (entity->Table e field-type-defs)))]
+  ^Map [entities field-type-defs xml-file]
+  (let [xml-nav (vtd/navigator (slurp xml-file))
+        e->table (fn e->table [e]
+                   (clojure.lang.MapEntry/create (:entity-name e)
+                                                 (entity->Table e field-type-defs xml-nav)))]
     (into {} (map e->table entities))))
 
 (defn ofbiz-schema
   "Create a Calcite Schema and return it for use."
   ^Schema [^SchemaPlus parent-schema ^String name ^Map operand]
-  (let [ftd (ep/load-field-type-defs (slurp "data/ofbiz-fieldtypes/framework/entity/fieldtype/fieldtypepostgres.xml"))
+  (let [ftd-str (slurp "data/ofbiz-fieldtypes/framework/entity/fieldtype/fieldtypepostgres.xml")
+        ftd (ep/load-field-type-defs ftd-str)
         entities (ep/load-many-entities default-ofbiz-entitydefs)
-        tables (create-tables entities ftd)]
+        xml-file "../ofbiz-framework/framework/common/data/UnitData.xml"
+        tables (create-tables entities ftd xml-file)]
     (proxy+
      []
      AbstractSchema
@@ -127,6 +134,4 @@
     (with-open [connection (jdbc/get-connection ds)]
       (let [metadata (.getMetaData connection)
             rs (.getTables metadata nil nil nil (into-array ["TABLE" "VIEW"]))]
-        (rs/datafiable-result-set rs ds))))
-
-  )
+        (rs/datafiable-result-set rs ds)))))
