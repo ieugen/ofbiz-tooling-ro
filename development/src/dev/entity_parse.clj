@@ -171,7 +171,22 @@
         ftype-def-idx (field-type-def-index fdefs)
         ftypes (fields->name+java-type-vec ftype-def-idx fields)]
     ;; extract attrs from row and convert
-    (into [] (map (partial row-attr->clj row-vtd) ftypes))))
+    (map (partial row-attr->clj row-vtd) ftypes)))
+
+(defn ofbiz-xml-row->entity2
+  "Convert entity row from xml file to collection of columns.
+   We need the vtd for the entity, the entity fields in the right order.
+
+   Entity as xml row looks like this:
+
+   <Uom abbreviation=\"b\" description=\"Bit of Data\"
+        uomId=\"DATA_b\" uomTypeId=\"DATA_MEASURE\"/>
+
+   * XML tag is entity type
+   * XML tag attributes are the entity fields. All are strings ?!."
+  [field-types row-vtd]
+  (map (partial row-attr->clj row-vtd) field-types))
+
 
 (comment
 

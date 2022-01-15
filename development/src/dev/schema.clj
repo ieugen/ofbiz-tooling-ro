@@ -99,20 +99,19 @@
    It implements the {@link ScannableTable} interface, so Calcite gets
    data by calling the {@link #scan(DataContext)} method."
   ^Table [table-def field-types-idx xml-nav]
-  (let [{:keys [fields rowdef data]} table-def]
+  (let [{:keys [fields entity-name]} table-def
+        n+t (ep/fields->name+sql-type-vec field-types-idx fields)
+        ftypes (ep/fields->name+java-type-vec field-types-idx fields)]
     (proxy+
      []
      AbstractTable
      (getRowType
       [this ^RelDataTypeFactory type-factory]
-      (let [n+t (ep/fields->name+sql-type-vec field-types-idx fields)]
-        (row-type type-factory n+t)))
-
+      (row-type type-factory n+t))
      ScannableTable
      (scan
       [this ^DataContext root]
-      (let [type-factory (.getTypeFactory root)
-            ^AtomicBoolean cancel-flag (.get DataContext$Variable/CANCEL_FLAG root)]
+      (let [^AtomicBoolean cancel-flag (.get DataContext$Variable/CANCEL_FLAG root)]
         (proxy+
          []
          AbstractEnumerable
@@ -121,9 +120,12 @@
           ;; return VTD's and convert row and column on demand
           ;; avoid doing conversion if we don't use the row because it is filtered out ?!
           (let [i (atom -1)
-                len (- (count data) 1)]
+                elems (into [] (vtd/select xml-nav entity-name))
+                len (- (count elems) 1)]
             (reify org.apache.calcite.linq4j.Enumerator
-              (current [_] (into-array Object (get data @i)))
+              (current [_]
+                (let [e (get elems @i)]
+                  (into-array Object (ep/ofbiz-xml-row->entity2 ftypes e))))
               (moveNext
                 [_]
                 (let [res (< @i len)]
@@ -178,7 +180,8 @@
             :user "admin"
             :password "admin"}
         ds (jdbc/get-datasource db)]
-    (jdbc/execute! ds ["select * from uom"]))
+    (jdbc/execute! ds ["select * from uom where uom_type_id='DATA_MEASURE' "])
+    (jdbc/execute! ds ["select * from uom_conversion"]))
 
   (tap> (ep/load-many-entities default-ofbiz-entitydefs))
 
