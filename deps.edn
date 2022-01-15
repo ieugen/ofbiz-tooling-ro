@@ -6,6 +6,7 @@
                                meander/epsilon {:mvn/version "0.0.650"}
                                riveted/riveted {:mvn/version "0.1.1"}
                                ;; jdbc - calcite
+                               camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
                                com.github.seancorfield/next.jdbc {:mvn/version "1.2.761"}
                                com.rpl/proxy-plus {:mvn/version "0.0.8"}
                                io.github.ieugen/calcite-clj {:mvn/version "0.1.2"}

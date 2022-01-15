@@ -1,14 +1,16 @@
 (ns dev.entity-parse
   "Functions to parse OFBiz entities to data structures.
    This will be input for Calcite Schema."
-  (:require [clojure.xml :as xml]
+  (:require [camel-snake-kebab.core :as csk]
             [riveted.core :as vtd])
   (:import (riveted.core Navigator)))
 
 (set! *warn-on-reflection* true)
 
-(defn clean-nils [m]
-  "TODO: Migrate to https://ask.clojure.org/index.php/8387/how-to-avoid-nil-values-in-maps"
+(defn clean-nils
+  "TODO: Migrate to https://ask.clojure.org/index.php/8387/how-to-avoid-nil-values-in-maps ?
+   Or better implement fetch all attributes from xml element."
+  [m]
   (into {} (filter (comp some? val) m)))
 
 (defn field-type-def->map
@@ -25,14 +27,15 @@
         ftypes (vtd/search nav "/fieldtypemodel/field-type-def")]
     (map field-type-def->map ftypes)))
 
-
 (defn entity-field->map
   "Map entity field to clojure."
   [^Navigator e]
-  (clean-nils
-   {:name (vtd/attr e :name)
-    :type (vtd/attr e :type)
-    :description (-> e (vtd/first-child :description) vtd/text)}))
+  (let [name (vtd/attr e :name)]
+    (clean-nils
+     {:name name
+      :sql-name (csk/->snake_case name)
+      :type (vtd/attr e :type)
+      :description (-> e (vtd/first-child :description) vtd/text)})))
 
 (defn entity-prim-key->map
   "Map entity prim-key"
@@ -55,33 +58,6 @@
       :rel-entity-name (vtd/attr e :rel-entity-name)
       :keymap (into [] (map entity-relation-keymap->map key-maps))})))
 
-(defn entity->map
-  "Map entity fields to clojure."
-  [^Navigator e]
-  (let [fields (vtd/children e :field)
-        prim-key (vtd/children e :prim-key)
-        relation (vtd/children e :relation)]
-    (clean-nils
-     {:entity-name (vtd/attr e :entity-name)
-      :package-name (vtd/attr e :package-name)
-      :title (vtd/attr e :title)
-      :fields (into [] (map entity-field->map fields))
-      :prim-keys (into [] (map entity-prim-key->map prim-key))
-      :relation (into [] (map entity-relation->map relation))})))
-
-(defn load-entities
-  "Load entity from entitymodel files. e.g. framework/entity/entitydef/entitymodel.xml"
-  [^String xml]
-  (let [nav (vtd/navigator xml)
-        entities (vtd/search nav "/entitymodel/entity")]
-    (map entity->map entities)))
-
-(defn load-many-entities
-  "Load multiple entity files from a list of paths"
-  [entity-paths]
-  (mapcat #(load-entities (slurp %)) entity-paths))
-
-
 (defn load-xml-data
   "Load OFBiz XML data https://cwiki.apache.org/confluence/display/OFBIZ/Handling+of+External+data"
   [^String xml]
@@ -90,11 +66,11 @@
 
 (defmulti xml-attr->clj (fn [java-type _] java-type))
 
-(defmethod xml-attr->clj "String" [java-type value] value)
-(defmethod xml-attr->clj "Integer" [java-type value] (Integer/parseInt value))
-(defmethod xml-attr->clj "Long" [java-type value] (Long/parseLong value))
-(defmethod xml-attr->clj "Double" [java-type value] (Double/parseDouble value))
-(defmethod xml-attr->clj "java.math.BigDecimal" [java-type value] (bigdec value))
+(defmethod xml-attr->clj "String" [_ value] value)
+(defmethod xml-attr->clj "Integer" [_ value] (Integer/parseInt value))
+(defmethod xml-attr->clj "Long" [_ value] (Long/parseLong value))
+(defmethod xml-attr->clj "Double" [_ value] (Double/parseDouble value))
+(defmethod xml-attr->clj "java.math.BigDecimal" [_ value] (bigdec value))
 
 (defmethod xml-attr->clj :default [java-type _]
   (throw (UnsupportedOperationException. (str "xml-attr->clj not implemented for " java-type))))
@@ -128,6 +104,21 @@
   [field-type-def-idx fields]
   (into [] (map (partial field-type->name+java-type field-type-def-idx) fields)))
 
+(defn field-type->name+sql-type
+  "Return the :sql-type of a field, given field type definitions.
+   Returns a vector of [ sql-name sql-type ].
+   Use with (partial field-type->sql-type field-type-index)"
+  [field-type-def-idx field]
+  (let [type (keyword (:type field))
+        name (:sql-name field)]
+    [name (:sql-type (get field-type-def-idx type))]))
+
+(defn fields->name+sql-type-vec
+  "Build java type array from field types.
+   Maintain field type order."
+  [field-type-def-idx fields]
+  (into [] (map (partial field-type->name+sql-type field-type-def-idx) fields)))
+
 (defn row-attr->clj
   "Extract an attribute from row VTD and convert to clojure type."
   [row-vtd [name java-type]]
@@ -135,6 +126,34 @@
     (if (some? val)
       (xml-attr->clj java-type val)
       val)))
+
+(defn entity->map
+  "Map entity fields to clojure."
+  ([^Navigator e]
+   (let [name (vtd/attr e :entity-name)
+         fields (vtd/children e :field)
+         prim-key (vtd/children e :prim-key)
+         relation (vtd/children e :relation)]
+     (clean-nils
+      {:entity-name name
+       :table-name (csk/->snake_case name)
+       :package-name (vtd/attr e :package-name)
+       :title (vtd/attr e :title)
+       :fields (into [] (map entity-field->map fields))
+       :prim-keys (into [] (map entity-prim-key->map prim-key))
+       :relation (into [] (map entity-relation->map relation))}))))
+
+(defn load-entities
+  "Load entity from entitymodel files. e.g. framework/entity/entitydef/entitymodel.xml"
+  ([^String xml]
+   (let [nav (vtd/navigator xml)
+         entities (vtd/search nav "/entitymodel/entity")]
+     (map entity->map entities))))
+
+(defn load-many-entities
+  "Load multiple entity files from a list of paths"
+  [entity-paths]
+  (mapcat #(load-entities (slurp %)) entity-paths))
 
 (defn ofbiz-xml-row->entity
   "Convert entity row from xml file to array of columns.
