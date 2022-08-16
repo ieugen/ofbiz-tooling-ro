@@ -51,9 +51,8 @@ pom.xml.asc
 .nrepl-port
 .cpcache/
 
-.vscode
-.clj-kondo
-.lsp
+.clj-kondo/.cache/
+.lsp/.cache
 .portal/
 
 temp/

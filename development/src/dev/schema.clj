@@ -1,6 +1,4 @@
 (ns dev.schema
-  {:clj-kondo/config '{:lint-as {com.rpl.proxy-plus/proxy+ clojure.core/proxy}
-                       :linters {:unused-binding {:exclude [this]}}}}
   (:require [clojure.string :as str]
             [com.rpl.proxy-plus :refer [proxy+]]
             [dev.entity-parse :as ep]

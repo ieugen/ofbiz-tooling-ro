@@ -1,0 +1,2 @@
+{:lint-as {com.rpl.proxy-plus/proxy+ clojure.core/proxy}
+ :linters {:unused-binding {:exclude [this]}}}

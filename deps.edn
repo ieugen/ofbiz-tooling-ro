@@ -1,15 +1,21 @@
 {:aliases  {:dev {:extra-paths ["development/src" "development/resources"]
-                  :extra-deps {djblue/portal {:mvn/version "0.16.1"}
-                               com.github.seancorfield/honeysql {:mvn/version "2.2.858"}
+                  :extra-deps {djblue/portal {:mvn/version "0.29.1"}
+                               com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
+                               ctmx/ctmx {:mvn/version "1.4.4"}
+                               io.github.jackrusher/mundaneum {:git/sha "2fb095924d3595853316b4a7783c2f7015d7deeb"}
                                org.apache.derby/derby {:mvn/version "10.15.2.0"}
-                               org.clojure/clojure {:mvn/version "1.10.3"}
-                               org.clojure/data.csv {:mvn/version "1.0.0"}
-                               org.clojure/tools.deps.alpha {:mvn/version "0.12.1003"}
+                               org.clojure/clojure {:mvn/version "1.11.1"}
+                               org.clojure/data.csv {:mvn/version "1.0.1"}
+                               org.clojure/test.check {:mvn/version "1.1.1"}
+                               org.clojure/tools.deps.alpha {:mvn/version "0.14.1222"}
                                meander/epsilon {:mvn/version "0.0.650"}
-                               riveted/riveted {:mvn/version "0.1.1"}
+                               metosin/malli {:mvn/version "0.8.9"}
+                               com.gfredericks/test.chuck {:mvn/version "0.2.10"}
+                               riveted/riveted {:mvn/version "0.2.0"}
+                               reifyhealth/specmonstah {:mvn/version "2.0.0"}
                                ;; jdbc - calcite
                                camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-                               com.github.seancorfield/next.jdbc {:mvn/version "1.2.761"}
+                               com.github.seancorfield/next.jdbc {:mvn/version "1.2.796"}
                                com.rpl/proxy-plus {:mvn/version "0.0.8"}
                                io.github.ieugen/calcite-clj {:mvn/version "0.1.2"}
                                org.apache.calcite/calcite-core {:mvn/version "1.29.0"}
@@ -17,6 +23,10 @@
                                org.apache.calcite/calcite-linq4j {:mvn/version "1.29.0"}
                                org.apache.calcite.avatica/avatica-core {:mvn/version "1.20.0"}
                                org.slf4j/slf4j-simple {:mvn/version "1.7.30"}}}
+
+            :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.9.874"}
+                                    org.slf4j/slf4j-simple {:mvn/version "1.7.30"}}
+                       :main-opts ["-m" "antq.core"]}
 
             :test {:extra-paths []}
 
