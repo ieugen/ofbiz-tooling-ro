@@ -36,5 +36,5 @@
             :poly {:main-opts ["-m" "polylith.clj.core.poly-cli.core"]
                    :extra-deps {polyfy/polylith
                                 {:git/url   "https://github.com/polyfy/polylith"
-                                 :sha       "403dccc9d07a89338ab2fec31b8a7207ec02545f"
+                                 :sha       "b3b6e2ae3dfea55713312591313ef13c57858991"
                                  :deps/root "projects/poly"}}}}}
