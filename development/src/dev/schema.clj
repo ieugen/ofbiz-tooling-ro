@@ -23,8 +23,6 @@
                                            AbstractTable)
            (org.apache.calcite.sql.type SqlTypeName)))
 
-(set! *warn-on-reflection* true)
-
 (def default-ofbiz-entitydefs
   ["data/ofbiz-entitydef/framework/common/entitydef/entitymodel.xml"
    "data/ofbiz-entitydef/framework/entity/entitydef/entitymodel.xml"

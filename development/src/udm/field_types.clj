@@ -8,11 +8,19 @@
 
 ;; (def domain-name [:and [:re #"^[a-z0-9A-Z][a-z0-9A-Z-_]{0,20}$"] :string])
 
+(s/def ::blob #(instance? java.sql.Blob %))
+(s/def ::byte-array bytes?)
+(s/def ::object #(instance? java.lang.Object %))
 (s/def ::date-time #(instance? java.time.LocalDate %))
 (s/def ::date #(instance? java.time.LocalDate %))
 (s/def ::time #(instance? java.time.LocalTime %))
 
-(s/def ::integer int?)
+(s/def ::currency-amount #(instance? java.math.BigDecimal %))
+(s/def ::currency-precise #(instance? java.math.BigDecimal %))
+(s/def ::fixed-point #(instance? java.math.BigDecimal %))
+(s/def ::floating-point double?)
+(s/def ::integer integer?)
+(s/def ::numeric int?)
 
 (s/def ::id string?)
 (s/def ::id-long string?)

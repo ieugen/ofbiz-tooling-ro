@@ -5,8 +5,6 @@
             [riveted.core :as vtd])
   (:import (riveted.core Navigator)))
 
-(set! *warn-on-reflection* true)
-
 (defn clean-nils
   "TODO: Migrate to https://ask.clojure.org/index.php/8387/how-to-avoid-nil-values-in-maps ?
    Or better implement fetch all attributes from xml element."
